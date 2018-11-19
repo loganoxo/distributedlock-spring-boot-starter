@@ -3,6 +3,7 @@ package com.zhiyou.core.config;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.StatefulRedisConnection;
+import io.lettuce.core.internal.HostAndPort;
 import io.lettuce.core.support.ConnectionPoolSupport;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -14,7 +15,8 @@ import org.redisson.config.SingleServerConfig;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+
+import java.util.List;
 
 /**
  * @author QinHe at 2018-11-09
@@ -24,9 +26,16 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 public class RedisConfig {
 
     @Bean(name = "lettucePool")
-    public GenericObjectPool lettucePool(LettuceConnectionFactory lettuceConnectionFactory) {
-        RedisURI redisURI = RedisURI.create(lettuceConnectionFactory.getHostName(), lettuceConnectionFactory.getPort());
-        redisURI.setDatabase(12);
+    public GenericObjectPool lettucePool(RedisProperties redisProperties) {
+        RedisURI.Builder builder = RedisURI.builder();
+        builder.withPassword(redisProperties.getPassword());
+        builder.withDatabase(12);
+        RedisProperties.Sentinel sentinel = redisProperties.getSentinel();
+        List<String> nodes = sentinel.getNodes();
+        nodes.forEach(node -> {
+            builder.withSentinel(HostAndPort.parse(node).getHostText(), HostAndPort.parse(node).getPort());
+        });
+        RedisURI redisURI = builder.build();
         RedisClient client = RedisClient.create(redisURI);
         GenericObjectPoolConfig config = new GenericObjectPoolConfig();
         config.setJmxEnabled(false);
