@@ -27,15 +27,23 @@ public class RedisConfig {
 
     @Bean(name = "lettucePool")
     public GenericObjectPool lettucePool(RedisProperties redisProperties) {
-        RedisURI.Builder builder = RedisURI.builder();
-        builder.withPassword(redisProperties.getPassword());
-        builder.withDatabase(12);
-        RedisProperties.Sentinel sentinel = redisProperties.getSentinel();
-        List<String> nodes = sentinel.getNodes();
-        nodes.forEach(node -> {
-            builder.withSentinel(HostAndPort.parse(node).getHostText(), HostAndPort.parse(node).getPort());
-        });
-        RedisURI redisURI = builder.build();
+        RedisURI redisURI = null;
+        if (redisProperties.getSentinel() != null) {
+            RedisURI.Builder builder = RedisURI.builder();
+            builder.withPassword(redisProperties.getPassword());
+            builder.withDatabase(12);
+            RedisProperties.Sentinel sentinel = redisProperties.getSentinel();
+            builder.withSentinelMasterId(sentinel.getMaster());
+            List<String> nodes = sentinel.getNodes();
+            nodes.forEach(node -> {
+                builder.withSentinel(HostAndPort.parse(node).getHostText(), HostAndPort.parse(node).getPort());
+            });
+            redisURI = builder.build();
+        } else {
+            redisURI = RedisURI.create(redisProperties.getHost(), redisProperties.getPort());
+            redisURI.setDatabase(12);
+            redisURI.setPassword(redisProperties.getPassword());
+        }
         RedisClient client = RedisClient.create(redisURI);
         GenericObjectPoolConfig config = new GenericObjectPoolConfig();
         config.setJmxEnabled(false);
@@ -50,8 +58,13 @@ public class RedisConfig {
         if (redisProperties.getSentinel() != null) { //sentinel
             SentinelServersConfig sentinelServersConfig = config.useSentinelServers();
             sentinelServersConfig.setMasterName(redisProperties.getSentinel().getMaster());
-            redisProperties.getSentinel().getNodes();
-            sentinelServersConfig.addSentinelAddress((String[]) redisProperties.getSentinel().getNodes().toArray());
+            List<String> nodes = redisProperties.getSentinel().getNodes();
+            String[] strings = new String[nodes.size()];
+            String schema = redisProperties.isSsl() ? "rediss://" : "redis://";
+            for (int i = 0; i < nodes.size(); i++) {
+                strings[i] = schema + nodes.get(i);
+            }
+            sentinelServersConfig.addSentinelAddress(strings);
             sentinelServersConfig.setDatabase(0);
             if (redisProperties.getPassword() != null) {
                 sentinelServersConfig.setPassword(redisProperties.getPassword());
