@@ -96,12 +96,12 @@
     <!--</build>-->
     <distributionManagement>
         <repository>
-            <id>releases</id>
+            <id>rdc-releases</id>
             <name>Aliyun Release Repository</name>
             <url>https://repo.rdc.aliyun.com/repository/39664-release-CYcutn/</url>
         </repository>
         <snapshotRepository>
-            <id>snapshots</id>
+            <id>rdc-snapshots</id>
             <name>Aliyun Snapshot Repository</name>
             <url>https://repo.rdc.aliyun.com/repository/39664-snapshot-yH3AHI/</url>
         </snapshotRepository>
