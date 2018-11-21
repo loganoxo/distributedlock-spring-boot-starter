@@ -97,13 +97,13 @@
     <distributionManagement>
         <repository>
             <id>releases</id>
-            <name>Nexus Release Repository</name>
-            <url>http://nexus.qinhej.top/repository/qinhe_maven_host_RELEASE/</url>
+            <name>Aliyun Release Repository</name>
+            <url>https://repo.rdc.aliyun.com/repository/39664-release-CYcutn/</url>
         </repository>
         <snapshotRepository>
             <id>snapshots</id>
-            <name>Nexus Snapshot Repository</name>
-            <url>http://nexus.qinhej.top/repository/qinhe_maven_host_SNAPSHOT/</url>
+            <name>Aliyun Snapshot Repository</name>
+            <url>https://repo.rdc.aliyun.com/repository/39664-snapshot-yH3AHI/</url>
         </snapshotRepository>
     </distributionManagement>
 
